@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package enlazar;
+
+// ─── Realtime Service ─────────────────────────────────────────────────────────
+// Exposed by the Realtime server; called by the API server.
+
+service RealtimeService {
+  // Broadcast a new message to all WebSocket clients in a room.
+  rpc BroadcastMessage (BroadcastMessageRequest) returns (BroadcastMessageResponse);
+
+  // Notify the realtime server that a user has joined a room
+  // (e.g., when joining via REST rather than WS).
+  rpc NotifyJoinRoom (JoinRoomRequest) returns (JoinRoomResponse);
+}
+
+message BroadcastMessageRequest {
+  string message_id   = 1;
+  string chat_id      = 2;
+  string author_id    = 3;
+  string author_name  = 4;
+  string content      = 5;
+  string created_at   = 6;
+}
+
+message BroadcastMessageResponse {
+  bool   success       = 1;
+  int32  delivered_to  = 2; // number of WebSocket clients the message was pushed to
+}
+
+message JoinRoomRequest {
+  string user_id  = 1;
+  string name     = 2;
+  string chat_id  = 3;
+}
+
+message JoinRoomResponse {
+  bool success = 1;
+}

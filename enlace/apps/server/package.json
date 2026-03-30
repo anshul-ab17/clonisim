@@ -2,7 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "dev": "tsc -w",
@@ -14,14 +14,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "uuid": "^13.0.0",
+    "@grpc/grpc-js": "^1.12.0",
+    "@grpc/proto-loader": "^0.7.13",
+    "@repo/shared": "workspace:*",
+    "dotenv": "^17.3.1",
+    "uuid": "^11.0.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {
+    "@types/node": "^22.15.3",
     "@types/ws": "^8.18.1",
     "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*", 
-    "@repo/shared": "workspace:*",
-    "@repo/db": "workspace:*"
+    "@repo/typescript-config": "workspace:*"
   }
 }

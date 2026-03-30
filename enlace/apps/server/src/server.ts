@@ -1,12 +1,12 @@
 import { WebSocketServer } from "ws";
 import { RoomManager } from "./roomManager.js";
-import { MessageService } from "@repo/db/src/services/message.service";
+import { ChatGrpcClient } from "./grpcClient.js";
 import { v4 as uuidv4 } from "uuid";
 
 export class WSServer {
   private wss;
   private roomManager = new RoomManager();
-  private messageService = new MessageService();
+  private grpcClient = new ChatGrpcClient();
 
   constructor(port: number) {
     this.wss = new WebSocketServer({ port });
@@ -21,26 +21,23 @@ export class WSServer {
         try {
           const data = JSON.parse(msg);
 
-          // 🔗 JOIN
           if (data.type === "join") {
             this.roomManager.join(data.chatId, ws);
             return;
           }
 
-          // 💬 MESSAGE
           if (data.type === "message") {
-            const messageId = uuidv4();
-
-            const saved = await this.messageService.sendMessage(
-              messageId,
-              data.userId,
-              data.chatId,
-              data.content
-            );
+            const saved = await this.grpcClient.sendMessage({
+              messageId: uuidv4(),
+              userId: data.userId as string,
+              chatId: data.chatId as string,
+              content: data.content as string,
+              userName: data.userName as string,
+            });
 
             this.roomManager.broadcast(data.chatId, {
               type: "message",
-              payload: saved
+              payload: saved,
             });
           }
         } catch (err) {

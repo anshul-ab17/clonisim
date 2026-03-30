@@ -1,4 +1,3 @@
-import "dotenv/config";
 import neo4j, { Driver } from "neo4j-driver";
 
 export class Neo4jClient {

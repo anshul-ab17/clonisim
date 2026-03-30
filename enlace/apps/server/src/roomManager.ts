@@ -10,7 +10,6 @@ export class RoomManager {
 
   broadcast(chatId: string, message: any) {
     const clients = this.rooms.get(chatId);
-
     if (!clients) return;
 
     clients.forEach((client) => {

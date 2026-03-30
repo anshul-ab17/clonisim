@@ -1,3 +1,4 @@
+import "dotenv/config"
 import { WSServer } from "./server.js";
 
 const PORT = 3004

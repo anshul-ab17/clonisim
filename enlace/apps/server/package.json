@@ -18,6 +18,10 @@
     "ws": "^8.20.0"
   },
   "devDependencies": {
-    "@types/ws": "^8.18.1"
+    "@types/ws": "^8.18.1",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*", 
+    "@repo/shared": "workspace:*",
+    "@repo/db": "workspace:*"
   }
 }

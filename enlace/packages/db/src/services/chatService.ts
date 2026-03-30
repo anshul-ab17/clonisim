@@ -19,6 +19,16 @@ export class ChatService {
     return { chatId, name };
   }
 
+  async getRooms() {
+    const session = this.db.getSession();
+    const res = await session.run("MATCH (c:ChatRoom) RETURN c");
+    await session.close();
+    return res.records.map((r) => {
+      const props = r.get("c").properties as { id: string; name: string };
+      return { chatId: props.id, name: props.name };
+    });
+  }
+
   async joinRoom(userId: string, chatId: string) {
     const session = this.db.getSession();
 

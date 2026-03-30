@@ -28,10 +28,10 @@ export class MessageService {
     await session.close();
 
     return {
-      messageId,
+      id: messageId,
       userId,
       chatId,
-      content
+      content,
     };
   }
 
@@ -40,8 +40,8 @@ export class MessageService {
 
     const res = await session.run(
       `
-      MATCH (c:ChatRoom {id: $chatId})<-[:IN]-(m:Message)
-      RETURN m
+      MATCH (c:ChatRoom {id: $chatId})<-[:IN]-(m:Message)<-[:SENT]-(u:User)
+      RETURN m, u.id as userId, u.name as userName
       ORDER BY m.createdAt ASC
       `,
       { chatId }
@@ -49,6 +49,11 @@ export class MessageService {
 
     await session.close();
 
-    return res.records.map((r) => r.get("m").properties);
+    return res.records.map((r) => ({
+      ...(r.get("m").properties as Record<string, unknown>),
+      createdAt: String(r.get("m").properties.createdAt ?? ""),
+      userId: r.get("userId") as string,
+      userName: r.get("userName") as string,
+    }));
   }
 }

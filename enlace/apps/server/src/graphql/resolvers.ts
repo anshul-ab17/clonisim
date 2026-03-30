@@ -18,10 +18,8 @@ export const resolvers = {
       const id = uuidv4();
       return userService.createUser(id, name);
     },
-    createRoom: (_: unknown, { name }: { name: string }) => {
-      const chatId = uuidv4();
-      return chatService.createRoom(chatId, name);
-    },
+    createRoom: (_: unknown, { name }: { name: string }) =>
+      chatService.createChannel(name),
     joinRoom: async (
       _: unknown,
       { userId, chatId }: { userId: string; chatId: string }

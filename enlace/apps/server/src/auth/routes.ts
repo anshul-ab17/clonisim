@@ -3,11 +3,17 @@ import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { UserService } from "@repo/db";
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
 
 const router: ExpressRouter = Router();
 const userService = new UserService();
 
 const secret = new TextEncoder().encode(process.env["JWT_SECRET"] ?? "");
+
+const authBody = z.object({
+  name: z.string().min(1),
+  password: z.string().min(1),
+});
 
 function makeToken(id: string, name: string) {
   return new SignJWT({ id, name })
@@ -17,12 +23,13 @@ function makeToken(id: string, name: string) {
 }
 
 router.post("/register", async (req, res) => {
-  const { name, password } = req.body as { name: string; password: string };
-
-  if (!name?.trim() || !password) {
+  const parsed = authBody.safeParse(req.body);
+  if (!parsed.success) {
     res.status(400).json({ error: "name and password required" });
     return;
   }
+
+  const { name, password } = parsed.data;
 
   const existing = await userService.getUserByName(name.trim());
   if (existing) {
@@ -39,12 +46,13 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { name, password } = req.body as { name: string; password: string };
-
-  if (!name?.trim() || !password) {
+  const parsed = authBody.safeParse(req.body);
+  if (!parsed.success) {
     res.status(400).json({ error: "name and password required" });
     return;
   }
+
+  const { name, password } = parsed.data;
 
   const found = await userService.getUserByName(name.trim());
   if (!found || !found.password) {

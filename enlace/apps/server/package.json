@@ -14,17 +14,26 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@grpc/grpc-js": "^1.12.0",
-    "@grpc/proto-loader": "^0.7.13",
+    "@apollo/server": "^4.11.0",
+    "@repo/db": "workspace:*",
     "@repo/shared": "workspace:*",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.6",
     "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "graphql": "^16.9.0",
+    "jose": "^5.9.0",
     "uuid": "^11.0.0",
-    "ws": "^8.20.0"
+    "ws": "^8.20.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^22.15.3",
-    "@types/ws": "^8.18.1",
     "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*"
+    "@repo/typescript-config": "workspace:*",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.15.3",
+    "@types/ws": "^8.18.1"
   }
 }

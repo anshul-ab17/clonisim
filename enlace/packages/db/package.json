@@ -20,9 +20,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "neo4j-driver": "^6.0.1"
+    "neo4j-driver": "^6.0.1",
+    "uuid": "^11.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.15.3"
+    "@types/node": "^22.15.3",
+    "@types/uuid": "^11.0.0"
   }
 }

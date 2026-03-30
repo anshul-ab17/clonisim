@@ -1,159 +1,227 @@
-# Turborepo starter
+# Enlazar
 
-This Turborepo starter is maintained by the Turborepo core team.
+A real-time chat application built on a Turborepo monorepo.
 
-## Using this example
+---
 
-Run the following command:
+## Stack
 
-```sh
-npx create-turbo@latest
+| Layer | Technology |
+|---|---|
+| Monorepo | Turborepo + pnpm workspaces |
+| Language | TypeScript (strict) |
+| Frontend | Next.js 16, React 19, Tailwind CSS |
+| REST + GraphQL | Express 5, Apollo Server 4 |
+| Realtime | WebSocket (`ws`) |
+| State management | Zustand 5 |
+| Database | Neo4j (graph) |
+| Infrastructure | Docker Compose |
+
+---
+
+## Structure
+
+```
+enlace/
+├── apps/
+│   ├── api        → Express REST + Apollo GraphQL + WebSocket  (port 3003)
+│   ├── server     → (reserved for future use)
+│   └── web        → Next.js frontend                           (port 3000)
+└── packages/
+    ├── db         → Neo4j client + services
+    ├── shared     → shared types + utils
+    ├── ui         → React component library
+    ├── typescript-config
+    └── eslint-config
 ```
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## Getting Started
 
-### Apps and Packages
+### 1. Prerequisites
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- Node.js ≥ 18
+- pnpm 9
+- Docker
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### 2. Start Neo4j
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+docker compose up -d
 ```
 
-Without global `turbo`, use your package manager:
+Neo4j browser available at `http://localhost:7474` (user: `neo4j`, password: `password`).
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+### 3. Environment variables
+
+Each app reads from its own `.env`. Copy the root `.env` into each app directory, or symlink it:
+
+```bash
+cp .env apps/api/.env
+cp .env apps/server/.env
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+Root `.env`:
+```
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=password
 ```
 
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+Optional web env (`apps/web/.env.local`):
+```
+NEXT_PUBLIC_API_URL=http://localhost:3003
+NEXT_PUBLIC_WS_URL=ws://localhost:3003
 ```
 
-### Develop
+### 4. Install dependencies
 
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+```bash
+pnpm install
 ```
 
-Without global `turbo`, use your package manager:
+### 5. Build packages
 
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```bash
+pnpm build --filter=@repo/db --filter=@repo/shared
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 6. Run
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
+```bash
+pnpm dev
 ```
 
-Without global `turbo`:
+Or run individually:
 
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```bash
+# terminal 1
+cd apps/api && pnpm start:dev
+
+# terminal 2
+cd apps/web && pnpm dev
 ```
 
-### Remote Caching
+---
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+## REST API
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+Base URL: `http://localhost:3003`
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+| Method | Path | Body | Description |
+|---|---|---|---|
+| POST | /users | `{ name }` | Create user |
+| GET | /users/:id | — | Get user |
+| GET | /chats | — | List all rooms |
+| POST | /chats | `{ name }` | Create room |
+| POST | /chats/:chatId/join | `{ userId }` | Join room |
+| GET | /messages/:chatId | — | Get messages |
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+---
 
-```sh
-cd my-turborepo
-turbo login
+## GraphQL
+
+Endpoint: `http://localhost:3003/graphql`
+
+```graphql
+type Query {
+  user(id: ID!): User
+  rooms: [Room!]!
+  messages(chatId: ID!): [Message!]!
+}
+
+type Mutation {
+  createUser(name: String!): User!
+  createRoom(name: String!): Room!
+  joinRoom(userId: ID!, chatId: ID!): Boolean!
+}
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+## WebSocket Protocol
+
+Connect to `ws://localhost:3003` (same port as HTTP).
+
+### Client → Server
+
+```json
+{ "type": "join", "chatId": "...", "userId": "..." }
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
+```json
+{ "type": "message", "chatId": "...", "userId": "...", "userName": "...", "content": "..." }
 ```
 
-Without global `turbo`:
+### Server → Client
 
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+```json
+{
+  "type": "message",
+  "payload": {
+    "id": "...",
+    "content": "...",
+    "createdAt": "...",
+    "userId": "...",
+    "userName": "..."
+  }
+}
 ```
 
-## Useful Links
+---
 
-Learn more about the power of Turborepo:
+## Database Schema (Neo4j)
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+### Nodes
+
+| Label | Properties |
+|---|---|
+| User | `id`, `name` |
+| ChatRoom | `id`, `name` |
+| Message | `id`, `content`, `createdAt` |
+
+### Relationships
+
+```
+(User)-[:MEMBER_OF]->(ChatRoom)
+(User)-[:SENT]->(Message)
+(Message)-[:IN]->(ChatRoom)
+```
+
+---
+
+## Architecture
+
+```
+Browser
+  ├── REST / GraphQL ──→ apps/api ──→ packages/db ──→ Neo4j
+  └── WebSocket      ──┘  (same port 3003)
+```
+
+### State Management (Zustand)
+
+| Store | State |
+|---|---|
+| `useUserStore` | `user` — persisted to localStorage |
+| `useChatStore` | `rooms`, `currentRoom`, `messages` |
+
+---
+
+## Phases
+
+| Phase | Status |
+|---|---|
+| 0 — Planning | done |
+| 1 — Monorepo setup | done |
+| 2 — Database layer | done |
+| 3 — Services layer | done |
+| 4 — Realtime server | done |
+| 5 — API server | done |
+| 6 — Frontend | done |
+| 7 — Authentication | pending |
+| 8 — Deployment | pending |
+| 9 — Scaling (Redis) | pending |
+| 10 — Event driven (Kafka) | pending |
+| 11 — Hybrid DB (PostgreSQL) | pending |
+| 12 — Advanced features | pending |

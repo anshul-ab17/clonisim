@@ -103,11 +103,7 @@ export function attachWS(server: Server) {
 
           roomManager.broadcast(data.chatId, {
             type: "message",
-            payload: {
-              ...saved,
-              userName: data.userName,
-              createdAt: new Date().toISOString(),
-            },
+            payload: { ...saved, userName: data.userName },
           });
           return;
         }

@@ -22,7 +22,7 @@ function makeToken(id: string, name: string) {
     .sign(secret);
 }
 
-router.post("/register", async (req, res) => {
+router.post("/signin", async (req, res) => {
   const parsed = authBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "name and password required" });
@@ -45,7 +45,7 @@ router.post("/register", async (req, res) => {
   res.status(201).json({ user, token });
 });
 
-router.post("/login", async (req, res) => {
+router.post("/signup", async (req, res) => {
   const parsed = authBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "name and password required" });

@@ -14,7 +14,7 @@ import { dmRoutes } from "./routes/dmRoutes.js";
 import { messageRoutes } from "./routes/messageRoutes.js";
 import { friendRoutes } from "./routes/friendRoutes.js";
 import { attachWS } from "./ws/wsServer.js";
-import { ChatService } from "@repo/db";
+import { ChatService, MessageService } from "@repo/db";
 
 const PORT = 3003;
 
@@ -41,6 +41,13 @@ attachWS(server);
 
 // Seed global room
 await new ChatService().getOrCreateGlobal();
+
+// Cron: clear global chat messages every 24 hours
+const messageService = new MessageService();
+setInterval(async () => {
+  await messageService.deleteGlobalMessages();
+  console.log("[cron] global chat cleared");
+}, 24 * 60 * 60 * 1000);
 
 server.listen(PORT, () => {
   console.log(`http  → http://localhost:${PORT}`);

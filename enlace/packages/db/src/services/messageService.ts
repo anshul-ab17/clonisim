@@ -11,28 +11,25 @@ export class MessageService {
   ) {
     const session = this.db.getSession();
 
+    const createdAt = new Date().toISOString();
+
     await session.run(
       `
       MATCH (u:User {id: $userId}), (c:ChatRoom {id: $chatId})
       CREATE (m:Message {
         id: $messageId,
         content: $content,
-        createdAt: datetime()
+        createdAt: $createdAt
       })
       CREATE (u)-[:SENT]->(m)
       CREATE (m)-[:IN]->(c)
       `,
-      { messageId, userId, chatId, content }
+      { messageId, userId, chatId, content, createdAt }
     );
 
     await session.close();
 
-    return {
-      id: messageId,
-      userId,
-      chatId,
-      content,
-    };
+    return { id: messageId, userId, chatId, content, createdAt };
   }
 
   async getMessages(chatId: string) {
@@ -51,9 +48,17 @@ export class MessageService {
 
     return res.records.map((r) => ({
       ...(r.get("m").properties as Record<string, unknown>),
-      createdAt: String(r.get("m").properties.createdAt ?? ""),
+      createdAt: r.get("m").properties.createdAt as string,
       userId: r.get("userId") as string,
       userName: r.get("userName") as string,
     }));
+  }
+
+  async deleteGlobalMessages() {
+    const session = this.db.getSession();
+    await session.run(
+      `MATCH (m:Message)-[:IN]->(c:ChatRoom {id: 'global'}) DETACH DELETE m`
+    );
+    await session.close();
   }
 }

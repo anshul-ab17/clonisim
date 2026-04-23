@@ -35,6 +35,13 @@ export class UserService {
       | undefined;
   }
 
+  async updateProfile(id: string, bio: string) {
+    const session = this.db.getSession();
+    await session.run(`MATCH (u:User {id: $id}) SET u.bio = $bio`, { id, bio });
+    await session.close();
+    return { id, bio };
+  }
+
   async getUser(id: string) {
     const session = this.db.getSession();
 
